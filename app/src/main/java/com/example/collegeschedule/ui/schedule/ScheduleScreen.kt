@@ -1,13 +1,21 @@
 package com.example.collegeschedule.ui.schedule
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -24,14 +32,19 @@ import com.example.collegeschedule.utils.getWeekDateRange
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ScheduleScreen() {
+fun ScheduleScreen(
+    selectedGroup: String,
+    onSelectedGroupChange: (String) -> Unit,
+    favoriteGroups: List<String>,
+    onToggleFavorite: (String) -> Unit,
+) {
 
     var groups by remember { mutableStateOf<List<String>>(emptyList()) }
-    var selectedGroup by remember { mutableStateOf("ИС-12") }
     var expanded by remember { mutableStateOf(false) }
 
     var schedule by remember {
-        mutableStateOf<List<ScheduleByDateDto>>(emptyList()) }
+        mutableStateOf<List<ScheduleByDateDto>>(emptyList())
+    }
     var loading by remember { mutableStateOf(true) }
     var error by remember { mutableStateOf<String?>(null) }
 
@@ -66,44 +79,66 @@ fun ScheduleScreen() {
             .fillMaxSize()
             .padding(12.dp)
     ) {
-        ExposedDropdownMenuBox(
-            expanded = expanded,
-            onExpandedChange = { expanded = !expanded }
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            OutlinedTextField(
-                value = selectedGroup,
-                onValueChange = {},
-                modifier = Modifier
-                    .menuAnchor()
-                    .padding(bottom = 12.dp),
-                label = { Text("Группа") },
-                trailingIcon = {
-                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
-                },
-                singleLine = true,
-                readOnly = true
-            )
-
-            ExposedDropdownMenu(
+            ExposedDropdownMenuBox(
+                modifier = Modifier.weight(1f),
                 expanded = expanded,
-                onDismissRequest = { expanded = false }
+                onExpandedChange = { expanded = !expanded }
             ) {
-                if (groups.isEmpty()) {
-                    DropdownMenuItem(
-                        text = { Text("Список групп пуст") },
-                        onClick = {}
-                    )
-                } else {
-                    groups.forEach { group ->
+                OutlinedTextField(
+                    value = selectedGroup,
+                    onValueChange = {},
+                    modifier = Modifier
+                        .menuAnchor()
+                        .fillMaxWidth()
+                        .padding(bottom = 12.dp),
+                    label = { Text("Группа") },
+                    trailingIcon = {
+                        ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                    },
+                    singleLine = true,
+                    readOnly = true
+                )
+
+                ExposedDropdownMenu(
+                    expanded = expanded,
+                    onDismissRequest = { expanded = false }
+                ) {
+                    if (groups.isEmpty()) {
                         DropdownMenuItem(
-                            text = { Text(group) },
-                            onClick = {
-                                selectedGroup = group
-                                expanded = false
-                            }
+                            text = { Text("Список групп пуст") },
+                            onClick = {}
                         )
+                    } else {
+                        groups.forEach { group ->
+                            val favorite = favoriteGroups.contains(group)
+                            DropdownMenuItem(
+                                text = { Text(group) },
+                                trailingIcon = {
+                                    Icon(
+                                        imageVector = if (favorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                                        contentDescription = null
+                                    )
+                                },
+                                onClick = {
+                                    onSelectedGroupChange(group)
+                                    expanded = false
+                                }
+                            )
+                        }
                     }
                 }
+            }
+
+            IconButton(onClick = { onToggleFavorite(selectedGroup) }) {
+                val isFavorite = favoriteGroups.contains(selectedGroup)
+                Icon(
+                    imageVector = if (isFavorite) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+                    contentDescription = "Добавить в избранное"
+                )
             }
         }
 

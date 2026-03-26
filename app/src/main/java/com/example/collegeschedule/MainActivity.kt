@@ -16,6 +16,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.adaptive.navigationsuite.NavigationSuiteScaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -23,12 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.PreviewScreenSizes
-import com.example.collegeschedule.data.api.ScheduleApi
-import com.example.collegeschedule.data.repository.ScheduleRepository
+import com.example.collegeschedule.ui.favorites.FavoritesScreen
 import com.example.collegeschedule.ui.schedule.ScheduleScreen
 import com.example.collegeschedule.ui.theme.CollegeScheduleTheme
-import retrofit2.Retrofit
-import retrofit2.converter.gson.GsonConverterFactory
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,19 +43,9 @@ class MainActivity : ComponentActivity() {
 @PreviewScreenSizes
 @Composable
 fun CollegeScheduleApp() {
-    var currentDestination by rememberSaveable {
-        mutableStateOf(AppDestinations.HOME) }
-
-    val retrofit = remember {
-        Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:5268/") // localhost для Android Emulator
-            .addConverterFactory(GsonConverterFactory.create())
-            .build()
-    }
-
-    val api = remember { retrofit.create(ScheduleApi::class.java) }
-    val repository = remember { ScheduleRepository(api) }
-
+    var currentDestination by rememberSaveable { mutableStateOf(AppDestinations.HOME) }
+    var selectedGroup by rememberSaveable { mutableStateOf("ИС-12") }
+    val favoriteGroups = remember { mutableStateListOf<String>() }
 
     NavigationSuiteScaffold(
         navigationSuiteItems = {
@@ -78,15 +66,34 @@ fun CollegeScheduleApp() {
     ) {
         Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
             when (currentDestination) {
-                AppDestinations.HOME -> ScheduleScreen()
+                AppDestinations.HOME -> ScheduleScreen(
+                    selectedGroup = selectedGroup,
+                    onSelectedGroupChange = { selectedGroup = it },
+                    favoriteGroups = favoriteGroups,
+                    onToggleFavorite = { group ->
+                        if (favoriteGroups.contains(group)) {
+                            favoriteGroups.remove(group)
+                        } else {
+                            favoriteGroups.add(group)
+                        }
+                    }
+                )
 
                 AppDestinations.FAVORITES ->
-                    Text("Избранные группы", modifier =
-                        Modifier.padding(innerPadding))
+                    FavoritesScreen(
+                        favoriteGroups = favoriteGroups,
+                        onGroupClick = { group ->
+                            selectedGroup = group
+                            currentDestination = AppDestinations.HOME
+                        },
+                        modifier = Modifier.padding(innerPadding)
+                    )
 
                 AppDestinations.PROFILE ->
-                    Text("Профиль студента", modifier =
-                        Modifier.padding(innerPadding))
+                    Text(
+                        "Профиль студента",
+                        modifier = Modifier.padding(innerPadding)
+                    )
             }
         }
     }
