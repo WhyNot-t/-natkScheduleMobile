@@ -1,11 +1,15 @@
 package com.example.collegeschedule.data.api
 
 import com.example.collegeschedule.data.dto.ScheduleByDateDto
+import com.example.collegeschedule.data.dto.StudentGroupDto
 import retrofit2.http.GET
 import retrofit2.http.Path
 import retrofit2.http.Query
 
 interface ScheduleApi {
+
+    @GET("api/schedule/groups")
+    suspend fun getGroups(): List<StudentGroupDto>
 
     @GET("api/schedule/group/{groupName}")
     suspend fun getSchedule(
