@@ -51,12 +51,7 @@ fun CollegeScheduleApp() {
         navigationSuiteItems = {
             AppDestinations.entries.forEach {
                 item(
-                    icon = {
-                        Icon(
-                            it.icon,
-                            contentDescription = it.label
-                        )
-                    },
+                    icon = { Icon(it.icon, contentDescription = it.label) },
                     label = { Text(it.label) },
                     selected = it == currentDestination,
                     onClick = { currentDestination = it }
@@ -71,29 +66,25 @@ fun CollegeScheduleApp() {
                     onSelectedGroupChange = { selectedGroup = it },
                     favoriteGroups = favoriteGroups,
                     onToggleFavorite = { group ->
-                        if (favoriteGroups.contains(group)) {
-                            favoriteGroups.remove(group)
-                        } else {
-                            favoriteGroups.add(group)
-                        }
-                    }
+                        if (favoriteGroups.contains(group)) favoriteGroups.remove(group)
+                        else favoriteGroups.add(group)
+                    },
+                    modifier = Modifier.padding(innerPadding)
                 )
 
-                AppDestinations.FAVORITES ->
-                    FavoritesScreen(
-                        favoriteGroups = favoriteGroups,
-                        onGroupClick = { group ->
-                            selectedGroup = group
-                            currentDestination = AppDestinations.HOME
-                        },
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                AppDestinations.FAVORITES -> FavoritesScreen(
+                    favoriteGroups = favoriteGroups,
+                    onGroupClick = { group ->
+                        selectedGroup = group
+                        currentDestination = AppDestinations.HOME
+                    },
+                    modifier = Modifier.padding(innerPadding)
+                )
 
-                AppDestinations.PROFILE ->
-                    Text(
-                        "Профиль студента",
-                        modifier = Modifier.padding(innerPadding)
-                    )
+                AppDestinations.PROFILE -> Text(
+                    "Профиль студента",
+                    modifier = Modifier.padding(innerPadding)
+                )
             }
         }
     }
@@ -103,7 +94,7 @@ enum class AppDestinations(
     val label: String,
     val icon: ImageVector,
 ) {
-    HOME("Home", Icons.Default.Home),
-    FAVORITES("Favorites", Icons.Default.Favorite),
-    PROFILE("Profile", Icons.Default.AccountBox),
+    HOME("Расписание", Icons.Default.Home),
+    FAVORITES("Избранное", Icons.Default.Favorite),
+    PROFILE("Профиль", Icons.Default.AccountBox),
 }
